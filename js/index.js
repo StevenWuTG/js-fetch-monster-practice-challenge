@@ -5,14 +5,15 @@ const backButton = document.querySelector("button#back")
 const forwardButton = document.querySelector("button#forward")
 let page = 1
 
+
 // monsters fetch 
 
-function loadMonsters() {
-    fetch("http://localhost:3000/monsters/?_limit=50&-page=1")
+function loadPage(page) {
+    fetch(`http://localhost:3000/monsters/?_limit=50&-page=${page}`)
     .then(response => response.json())
-    .then(data => {
-        data.forEach(element => {
-            renderMon(element)   
+    .then(dataArr => {
+        dataArr.forEach(monster => {
+            renderMon(monster)   
                    
         });
     })
@@ -20,10 +21,9 @@ function loadMonsters() {
 
 
 function initialize() {
-    loadMonsters()
+    loadPage(page)
     renderNewMonForm()  
 }
-initialize()
 
 // render functions
 
@@ -33,16 +33,17 @@ function renderMon(data) {
     const p = document.createElement("p")
     div.dataset.id = data.id
     div.classList.add("monster")
-
+    
     h2.textContent = `Name: ${data.name}  Age: ${data.age}`
     p.textContent = `${data.description}`
-
+    
     div.append(h2, p)
     monContainerDiv.append(div)
 }
 
 function renderNewMonForm() {
     const form = document.createElement("form")
+
     const nameForm = document.createElement("input")
     nameForm.type = "text"
     nameForm.name = "name"
@@ -59,7 +60,51 @@ function renderNewMonForm() {
     submitInput.type = "submit"
     submitInput.name = "submit"
     submitInput.value = "Create Monster"
+
     form.append(nameForm,ageForm,descForm, submitInput)
     createMonDiv.append(form)
-
+    
 }
+
+
+
+// Events  
+createMonDiv.addEventListener("submit", function(e) {
+    e.preventDefault
+
+    const newMon = {
+        name: e.target.name.value,
+        age: e.target.age.value,
+        description: e.target.description.value
+    }
+    fetch("http://localhost:3000/monsters", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+        },
+        body: JSON.stringify(newMon)
+    })
+    .then(response => response.json())
+    .then(newMon => {
+        renderMon(newMon)
+    })
+   
+})
+
+
+backButton.addEventListener("click", function(e) {
+    loadPage(page--)
+    console.log(page)
+})
+
+forwardButton.addEventListener("click", function(e) {
+    loadPage(page++)
+    console.log(page)
+})
+
+
+
+
+
+initialize()
